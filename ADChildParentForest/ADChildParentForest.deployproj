@@ -28,12 +28,24 @@
     <Folder Include="Templates\" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="CustomScripts\remove-subdomain-lab.ps1" />
+    <Content Include="CustomScripts\sd0-users.csv" />
+    <Content Include="CustomScripts\SDCCustomScript.ps1" />
     <None Include="Deployment.targets">
       <Visible>False</Visible>
     </None>
-    <Content Include="Deploy-AzureResourceGroup.ps1" />
+    <Content Include="CustomScripts\Groups.csv" />
+    <Content Include="CustomScripts\Import.ps1" />
+    <Content Include="CustomScripts\Members.csv" />
+    <Content Include="CustomScripts\Microsoft.Rba.LogFunctions.ps1" />
+    <Content Include="CustomScripts\OUs.csv" />
+    <Content Include="CustomScripts\Users.csv" />
     <Content Include="Templates\azuredeploy.json" />
     <Content Include="Templates\azuredeploy.parameters.json" />
+    <Content Include="DSC\ConfigDataAD.psd1" />
+    <Content Include="DSC\DCConfig.ps1" />
+    <Content Include="DSC\ConfigDataSDC.psd1" />
+    <Content Include="DSC\SDC.ps1" />
   </ItemGroup>
   <Target Name="GetReferenceAssemblyPaths" />
 </Project>

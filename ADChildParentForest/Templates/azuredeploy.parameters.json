@@ -1,6 +1,52 @@
 ﻿{
-    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
-    "contentVersion": "1.0.0.0",
-    "parameters": {
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "AdminUserName": {
+      "value": "mtadmin"
+    },
+    "AdminPassword": {
+      "value": "Test@2017"
+    },
+    "VirtualNetworkName": {
+      "value": "VNET-LAB"
+    },
+    "virtualMachineSize": {
+      "value": "Standard_D2_v2"
+    },
+   "domainName": {
+      "value": "contosoad.com"
+    },
+    "NetBiosDomainname": {
+      "value": "contosoad"
+    },
+    "DSCUpdateTagVersion": {
+      "value": "2.1"
+    },
+
+    "GatewaySubnetAdressPrefix": {
+      "value": "10.1.1.0/28"
+    },
+    "VNETPrefix": {
+      "value": "10.1.0.0/16"
+    },
+    "VNETSubnet1Name": {
+      "value": "DMZSubnet"
+    },
+    "VNETSubnet1Prefix": {
+      "value": "10.1.1.129/25"
+    },
+    "VNETSubnet2Name": {
+      "value": "MainSubnet"
+    },
+    "VNETSubnet2Prefix": {
+      "value": "10.1.2.0/24"
+    },
+    "NSGSubnet1": {
+      "value": "DMZ-NSG"
+    },
+    "NSGSubnet2": {
+      "value": "MAIN-NSG"
     }
+  }
 }
