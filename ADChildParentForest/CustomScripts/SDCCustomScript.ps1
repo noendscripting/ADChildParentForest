@@ -15,6 +15,7 @@ Foreach ($user in $users)
 		New-ADUser -GivenName $user.GivenName -Surname $user.Surname  -DisplayName $user.DisplayName -Name $user.Name -SamAccountName $user.SamAccountName -UserPrincipalName "$($user.SamAccountName)@$($currentDomain.NetBIOSName).$($currentDomain.ParentDomain)" -AccountPassword (ConvertTo-SecureString "passw@rd1" -AsPlainText -Force) -PasswordNeverExpires $True -ChangePasswordAtLogon $False -Enabled $True -Path "OU=Company Users,$($currentDomain.DistinguishedName)"
 	}
 
-<#Start-Process -FilePath C:\Windows\System32\Repadmin.exe -ArgumentList "/kcc > c:\Packages\repadmin-kcc.log" -NoNewWindow -Wait
-Start-Process -FilePath C:\Windows\System32\Repadmin.exe -ArgumentList "/syncall /edSA > c:\Packages\repadmin-syncall.log" -NoNewWindow -Wait
-shutdown -r -t 10 -f -C "Final restart DC $($env:computername)"#>
+$Cert = New-SelfSignedCertificate -CertstoreLocation Cert:\LocalMachine\My -DnsName $env:COMPUTERNAME
+Enable-PSRemoting -SkipNetworkProfileCheck -Force
+New-Item -Path WSMan:\LocalHost\Listener -Transport HTTPS -Address * -CertificateThumbPrint $Cert.Thumbprint –Force
+New-NetFirewallRule -DisplayName "Windows Remote Management (HTTPS-In)" -Name "Windows Remote Management (HTTPS-In)" -Profile Any -LocalPort 5986 -Protocol TCP

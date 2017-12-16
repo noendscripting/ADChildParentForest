@@ -18,13 +18,7 @@
         "Standard_F2"
       ]
     },
-    "DSCUpdateTagVersion": {
-      "type": "string",
-      "defaultValue": "1.0",
-      "metadata": {
-        "description": "This value must be changed from a previous deployment to ensure the extension will run"
-      }
-    },
+   
     "domainName": {
       "type": "string"
     },
@@ -72,10 +66,6 @@
         "description": "Auto-generated token to access _artifactsLocation"
       }
     },
-    "SDCUpdateTagVersion": {
-      "type": "string",
-      "defaultValue": "1.0"
-    },
     "subdomainOne": {
       "type": "string",
       "defaultValue": "sd0"
@@ -95,10 +85,11 @@
     "ImageOffer": "WindowsServer",
     "WindowsOSVersion": "2012-R2-Datacenter",
     "DcDscConfigurationFunction": "DCConfig.ps1\\DcConfig",
+    "SDcDscConfigurationFunction": "SDC.ps1\\Main",
     "DscConfigDataFile": "ConfigDataAD.psd1",
     "projectName": "ADChildParentForest",
     "DSCArchiveFolder": "DSC",
-    "DSCArchiveFileName": "DSC.zip",
+    "DSCArchiveFileName": "dsc.zip",
     "customScriptFolder": "CustomScripts",
     "customScriptFiles": [
       "Import.ps1",
@@ -121,7 +112,7 @@
       "SDCCustomScript.ps1",
       "remove-subdomain-lab.ps1",
       "OUs.csv",
-      "[concat(parameters('subdomainOne'),'-users.csv') ]"
+      "[concat(parameters('subdomainOne'),'-users.csv')]"
     ],
     "SDscConfigDataFile": "ConfigDataSDC.psd1",
     "DCPublicIP": "[concat(variables('VMNames')[1],'PublicIP')]",
@@ -223,7 +214,8 @@
           {
             "name": "ipconfig1",
             "properties": {
-              "privateIPAllocationMethod": "Dynamic",
+              "privateIPAllocationMethod": "Static",
+              "privateIPAddress": "10.1.2.4",
               "subnet": {
                 "id": "[variables('subnetRef')]"
               },
@@ -244,7 +236,8 @@
       "apiVersion": "2015-06-15",
       "dependsOn": [
         "Microsoft.Resources/deployments/VirtualNetwork",
-        "[concat('Microsoft.Network/publicIPAddresses/',variables('SDCPublicIP'))]"
+        "[concat('Microsoft.Network/publicIPAddresses/',variables('SDCPublicIP'))]",
+        "[concat('Microsoft.Network/networkInterfaces/', variables('VMNames')[1],'NIC')]"
       ],
       "tags": {
         "displayName": "SDC NIC"
@@ -263,9 +256,12 @@
               }
             }
           }
-        ]
-      }
-    }, // DC VM - VM promoted as Domain Controller, Enterprise Root CA is installed
+        ],
+        "dnsSettings": {
+          "dnsServers": [ "[reference(concat(variables('VMNames')[1],'NIC')).ipConfigurations[0].properties.privateIPAddress]" ]
+           }
+        }
+      }, // DC VM - VM promoted as Domain Controller, Enterprise Root CA is installed
     {
       "comments": "# DC VM",
       "name": "[variables('VMNames')[1]]",
@@ -332,7 +328,7 @@
             "typeHandlerVersion": "2.13",
             "autoUpgradeMinorVersion": true,
             "settings": {
-              "modulesUrl": "[concat(parameters('_artifactsLocation'), '/', 'dsc.zip')]",
+              "modulesUrl": "[concat(parameters('_artifactsLocation'), '/', variables('DSCArchiveFileName'))]",
               "sasToken": "[parameters('_artifactsLocationSasToken')]",
               "configurationFunction": "[variables('DcDscConfigurationFunction')]",
               "properties": {
@@ -436,8 +432,8 @@
       },
       "resources": [
         {
-          "name": "SDCDSC",
           "type": "extensions",
+          "name": "SDCConfig",
           "location": "[resourceGroup().location]",
           "apiVersion": "2015-06-15",
           "dependsOn": [
@@ -445,50 +441,38 @@
             "[concat('Microsoft.Compute/virtualMachines/', variables('VMNames')[1],'/extensions/DCConfig')]"
           ],
           "tags": {
-            "displayName": "SDCDSC"
+            "displayName": "SDCConfig"
           },
           "properties": {
             "publisher": "Microsoft.Powershell",
             "type": "DSC",
-            "typeHandlerVersion": "2.9",
+            "typeHandlerVersion": "2.20",
             "autoUpgradeMinorVersion": true,
-            "forceUpdateTag": "[parameters('SDCUpdateTagVersion')]",
             "settings": {
-              "configuration": {
-                "url": "[concat(parameters('_artifactsLocation'),'/',variables('projectName'), '/DSC/', variables('DscConfigDataFile'), parameters('_artifactsLocationSasToken'))]",
-
-                "script": "SDC.ps1",
-                "function": "Main"
-              },
-              "configurationData": {
-                "url": "[concat(parameters('_artifactsLocation'),'/DSC/',variables('SDscConfigDataFile'),parameters('_artifactsLocationSasToken'))]"
-              },
-              "configurationArguments": {
+              "modulesUrl": "[concat(parameters('_artifactsLocation'), '/', variables('DSCArchiveFileName'))]",
+              "sasToken": "[parameters('_artifactsLocationSasToken')]",
+              "configurationFunction": "[variables('SDcDscConfigurationFunction')]",
+              "properties": {
                 "nodeName": "localhost",
                 "DataDiskNumber": "2",
                 "DataDriveLetter": "F",
-                "DomainAdminCredentials": {
-                  "UserName": "[concat(variables('parentForestNetBios'),'\\',parameters('adminUsername'))]",
-                  "Password": "[parameters('AdminPassword')]"
-                },
                 "parentForest": "[parameters('domainName')]",
                 "domainName": "[parameters('subdomainOne')]",
-                "DNSSearchSuffix": "[variables('domains')]"
+                "DNSSearchSuffix": "[variables('domains')]",
+                "DomainAdminCredentials": {
+                  "UserName": "[concat(parameters('NetBiosDomainname'),'\\',parameters('AdminUserName'))]",
+                  "Password": "PrivateSettingsRef:DomainAdminPassword"
+                }
               }
-
-
-
+              
             },
-
             "protectedSettings": {
-              "configurationUrlSasToken": "[parameters('_artifactsLocationSasToken')]",
-              "configurationArgumnets": {
-
-
+              "dataBlobUri": "[concat(parameters('_artifactsLocation'),'/',variables('projectName'), '/DSC/', variables('SDscConfigDataFile'), parameters('_artifactsLocationSasToken'))]",
+              "items": {
+                "DomainAdminPassword": "[parameters('AdminPassword')]"
               }
             }
           }
-
         },
         {
           "name": "SDCCustomScript",
@@ -497,7 +481,7 @@
           "apiVersion": "2015-06-15",
           "dependsOn": [
             "[concat('Microsoft.Compute/virtualMachines/', variables('VMNames')[0])]",
-            "[concat('Microsoft.Compute/virtualMachines/', variables('VMNames')[0],'/extensions/SDCDSC')]"
+            "[concat('Microsoft.Compute/virtualMachines/', variables('VMNames')[0],'/extensions/SDCConfig')]"
           ],
           "tags": {
             "displayName": "SDCCustomScript"
@@ -514,7 +498,7 @@
                 "[concat(parameters('_artifactsLocation'), '/', variables('projectName'),'/',variables('customScriptFolder'), '/',variables('SDCCustomScriptScriptFileName')[2], parameters('_artifactsLocationSasToken'))]",
                 "[concat(parameters('_artifactsLocation'), '/', variables('projectName'),'/',variables('customScriptFolder'), '/',variables('SDCCustomScriptScriptFileName')[3], parameters('_artifactsLocationSasToken'))]"
               ],
-              "commandToExecute": "[concat('powershell -ExecutionPolicy Unrestricted -File ', variables('projectName'), '/', variables('SDCCustomScriptScriptFileName')[0])]"
+              "commandToExecute": "[concat('powershell -ExecutionPolicy Unrestricted -File ', variables('projectName'), '/',variables('SDCCustomScriptScriptFolder'),'/', variables('SDCCustomScriptScriptFileName')[0])]"
             }
           }
         }
@@ -524,6 +508,10 @@
 
   ],
   "outputs": {
- 
+    "ADDCIP": {
+      "type": "string",
+      "value": "[reference(concat(variables('VMNames')[1],'NIC')).ipConfigurations[0].properties.privateIPAddress]"
+    }
+
   }
 }

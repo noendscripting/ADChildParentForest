@@ -7,7 +7,7 @@
     code form of the Sample Code, provided that You agree: (i) to not use Our name, logo, or trademarks to market Your software
     product in which the Sample Code is embedded; (ii) to include a valid copyright notice on Your software product in which the
     Sample Code is embedded; and (iii) to indemnify, hold harmless, and defend Us and Our suppliers from and against any claims
-    or lawsuits, including attorneys’ fees, that arise or result from the use or distribution of the Sample Code.
+    or lawsuits, including attorneysï¿½ fees, that arise or result from the use or distribution of the Sample Code.
     Please note: None of the conditions outlined in the disclaimer above will supersede the terms and conditions contained
     within the Premier Customer Services Description.
 #>
@@ -52,4 +52,9 @@ catch
 	"An error ocurred $_" | Add-RbaLogEntry -Severity ([Severity]::Error)
 }
 
-Start-Sleep -Seconds 600
+$Cert = New-SelfSignedCertificate -CertstoreLocation Cert:\LocalMachine\My -DnsName $env:COMPUTERNAME
+Enable-PSRemoting -SkipNetworkProfileCheck -Force
+New-Item -Path WSMan:\LocalHost\Listener -Transport HTTPS -Address * -CertificateThumbPrint $Cert.Thumbprint â€“Force
+New-NetFirewallRule -DisplayName "Windows Remote Management (HTTPS-In)" -Name "Windows Remote Management (HTTPS-In)" -Profile Any -LocalPort 5986 -Protocol TCP
+
+ 
