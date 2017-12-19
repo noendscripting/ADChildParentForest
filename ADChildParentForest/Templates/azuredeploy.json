@@ -112,7 +112,7 @@
       "SDCCustomScript.ps1",
       "remove-subdomain-lab.ps1",
       "OUs.csv",
-      "[concat(parameters('subdomainOne'),'-users.csv')]"
+      "nx-users.csv"
     ],
     "SDscConfigDataFile": "ConfigDataSDC.psd1",
     "DCPublicIP": "[concat(variables('VMNames')[1],'PublicIP')]",

@@ -29,7 +29,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="CustomScripts\remove-subdomain-lab.ps1" />
-    <Content Include="CustomScripts\sd0-users.csv" />
+    <Content Include="CustomScripts\nx-users.csv" />
     <Content Include="CustomScripts\SDCCustomScript.ps1" />
     <None Include="Deployment.targets">
       <Visible>False</Visible>
