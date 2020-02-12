@@ -15,7 +15,7 @@ steps:
 
 - task: ArchiveFiles@2
   inputs: 
-    rootFolderOrFile: '$(Build.BinariesDirectory)/ADChildParentForest/DSC'
+    rootFolderOrFile: '$(Build.ArtifactStagingDirectory)/ADChildParentForest/DSC'
     archiveType: 'zip'
     archiveFile: '$(Build.ArtifactStagingDirectory)/DSC.zip'
 
