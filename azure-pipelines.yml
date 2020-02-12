@@ -15,7 +15,8 @@ steps:
 
 - task: ArchiveFiles@2
   inputs: 
-    rootFolderOrFile: '$(Build.ArtifactStagingDirectory)/ADChildParentForest/DSC'
+    rootFolderOrFile: '$(System.DefaultWorkingDirectory)/_noendscripting_ADChildParentForest/ADChildParentForest/DSC'
     archiveType: 'zip'
     archiveFile: '$(Build.ArtifactStagingDirectory)/DSC.zip'
+    includeRootFolder: false
 
