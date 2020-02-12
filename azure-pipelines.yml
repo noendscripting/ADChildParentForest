@@ -10,7 +10,7 @@ pool:
   vmImage: 'windows-2019'
 
 steps:
-- script: echo Hello, world!
+- script: dir '$(System.DefaultWorkingDirectory)
   displayName: 'Run a one-line script'
 
 - task: ArchiveFiles@2
